@@ -5,6 +5,7 @@ from keras.utils.image_utils import img_to_array
 from sklearn.decomposition import PCA
 import pandas as pd
 
+
 def get_data(data_path=None, label_data_path=None, width=100, height=100,final_data_path=None):
     """
     This function resizes the images by a chosen ratio using linear interpolation (weighted average) and

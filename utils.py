@@ -3,10 +3,12 @@ import cv2
 import numpy as np
 from keras.utils.image_utils import img_to_array
 from sklearn.decomposition import PCA
+import pandas as pd
 
-def resize(data_path=None, width=100, height=100,final_data_path=None):
+def get_data(data_path=None, label_data_path=None, width=100, height=100,final_data_path=None):
     """
-    This function resizes the images by a chosen ratio using linear interpolation (weighted average)
+    This function resizes the images by a chosen ratio using linear interpolation (weighted average) and
+    save the images in given directory
 
     Args:
         data_path: original data directory
@@ -15,12 +17,14 @@ def resize(data_path=None, width=100, height=100,final_data_path=None):
         final_data_path: final (processed) data directory
 
     Returns:
-        np.array with all the images
+        (np.array with all the images, np.array with all the labels)
     """
     data = []
+    df = pd.read_csv(label_data_path)
+    labels = df.gender.values
+    progress = 0
     # run thought the directory
     for filename in os.listdir(data_path)[:]:
-        print(filename)
         if filename.endswith(".jpg") or filename.endswith(".png"):
             # read each image
             image = cv2.imread(os.path.join(data_path, filename))
@@ -30,15 +34,19 @@ def resize(data_path=None, width=100, height=100,final_data_path=None):
             # image to np.array
             image = img_to_array(image)
             data.append(image)
-            np.savetxt(final_data_path + '/{}.txt'
-                       .format(filename[:-4]),
-                       image.ravel())
+            if final_data_path != None:
+                np.savetxt(final_data_path + '/{}.txt'
+                           .format(filename[:-4]),
+                           image.ravel())
+        progress += 1
+        print('Progress: {:.2f}%'.format(1 - (len(os.listdir(data_path)[:]) - progress)/len(os.listdir(data_path)[:])),
+              end='\r')
     # normalize the data
     X = np.array(data, dtype="float32") / 255.0
-    return X
+    return (X, labels)
 
 
-def resize_pca(data_path=None, width=100, height=100, var_exp=0.9,final_data_path=None):
+def get_data_pca(data_path=None,label_data_path=None, width=100, height=100, var_exp=0.9,final_data_path=None):
     """
     This function resizes the images by a chosen ratio using linear interpolation (weighted average)
 
@@ -50,13 +58,16 @@ def resize_pca(data_path=None, width=100, height=100, var_exp=0.9,final_data_pat
         final_data_path: final (processed) data directory
 
     Returns:
-        (np.array with all the images with the pca decomposition, pca components to do the inverse transformation)
+        (np.array with all the images with the pca decomposition, np.array with all the labels,
+         pca components to do the inverse transformation)
     """
     data = []
     pca_comp = []
+    df = pd.read_csv(label_data_path)
+    labels = df.gender.values
+    progress = 0
     # run thought the directory
     for filename in os.listdir(data_path)[:]:
-        print(filename)
         if filename.endswith(".jpg") or filename.endswith(".png"):
             # read each image
             image = cv2.imread(os.path.join(data_path, filename))
@@ -70,15 +81,19 @@ def resize_pca(data_path=None, width=100, height=100, var_exp=0.9,final_data_pat
             image_transformed = pca.fit_transform(image.reshape(width,height))
             # store compressed image
             data.append(image_transformed)
-            # save compressed image
-            np.savetxt(final_data_path + '/{}.txt'
-                       .format('image' + filename[:-4] + str(image_transformed.shape)),
-                       image_transformed.ravel())
-            # save componentes for inverse transform
-            np.savetxt(final_data_path + '/{}.txt'
-                       .format('pca_comp' + filename[:-4] + str(pca.components_.shape)),
-                       pca.components_.ravel())
+            if final_data_path != None:
+                # save compressed image
+                np.savetxt(final_data_path + '/{}.txt'
+                           .format('image' + filename[:-4] + str(image_transformed.shape)),
+                           image_transformed.ravel())
+                # save componentes for inverse transform
+                np.savetxt(final_data_path + '/{}.txt'
+                           .format('pca_comp' + filename[:-4] + str(pca.components_.shape)),
+                           pca.components_.ravel())
+        progress += 1
+        print('Progress: {:.2f}%'.format(1 - (len(os.listdir(data_path)[:]) - progress)/len(os.listdir(data_path)[:])),
+              end='\r')
     # Normalize data
     X = np.array(data, dtype="float32") / 255.0
-    return (X,pca_comp)
+    return (X,labels, pca_comp)
 

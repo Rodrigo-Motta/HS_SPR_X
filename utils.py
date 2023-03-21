@@ -18,7 +18,7 @@ def get_data(data_path=None, label_data_path=None, width=100, height=100,final_d
         final_data_path: final (processed) data directory
 
     Returns:
-        (np.array with all the images, np.array with all the labels)
+        (np.array with the images, np.array with the labels)
     """
     data = []
     df = pd.read_csv(label_data_path)
@@ -59,7 +59,7 @@ def get_data_pca(data_path=None,label_data_path=None, width=100, height=100, var
         final_data_path: final (processed) data directory
 
     Returns:
-        (np.array with all the images with the pca decomposition, np.array with all the labels,
+        (np.array all the images with the pca decomposition, np.array all the labels,
          pca components to do the inverse transformation)
     """
     data = []

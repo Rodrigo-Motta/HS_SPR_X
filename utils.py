@@ -39,7 +39,7 @@ def get_data(data_path=None, label_data_path=None, width=100, height=100,final_d
                            .format(filename[:-4]),
                            image.ravel())
         progress += 1
-        print('Progress: {:.2f}%'.format(1 - (len(os.listdir(data_path)[:]) - progress)/len(os.listdir(data_path)[:])),
+        print('Progress: {:.2f}%'.format((1 - (len(os.listdir(data_path)[:]) - progress)/len(os.listdir(data_path)[:]))*100),
               end='\r')
     # normalize the data
     X = np.array(data, dtype="float32") / 255.0
@@ -91,7 +91,7 @@ def get_data_pca(data_path=None,label_data_path=None, width=100, height=100, var
                            .format('pca_comp' + filename[:-4] + str(pca.components_.shape)),
                            pca.components_.ravel())
         progress += 1
-        print('Progress: {:.2f}%'.format(1 - (len(os.listdir(data_path)[:]) - progress)/len(os.listdir(data_path)[:])),
+        print('Progress: {:.2f}%'.format((1 - (len(os.listdir(data_path)[:]) - progress)/len(os.listdir(data_path)[:]))*100),
               end='\r')
     # Normalize data
     X = np.array(data, dtype="float32") / 255.0

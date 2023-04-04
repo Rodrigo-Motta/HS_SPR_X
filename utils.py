@@ -97,7 +97,7 @@ def get_data_pca(data_path=None,label_data_path=None, width=100, height=100, var
     X = np.array(data, dtype="float32") / 255.0
     return (X,labels, pca_comp)
 
-def get_data_svd(data_path=None, label_data_path=None,final_data_path=None, r=100):
+def get_data_svd(data_path=None, final_data_path=None, r=100):
     '''
     This function applies an SVD routine to compress the images passed here and saves
     the image in a given directory.
@@ -111,18 +111,27 @@ def get_data_svd(data_path=None, label_data_path=None,final_data_path=None, r=10
         .png compressed image.
     '''
     progress = 0
+    error_list = []
     for filename in os.listdir(data_path)[:]:
-        if filename.endswith(".jpg") or filename.endswith(".png"):
-            # read each image
-            image = cv2.imread(os.path.join(data_path, filename))
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            # applies svd
-            U, S, Vt = np.linalg.svd(image, full_matrices=False)
-            S = np.diag(S)
-            image_compressed = U[:,:r] @ S[:r,:r] @ Vt[:r,:]
-            if final_data_path != None:
-                cv2.imwrite(filename=final_data_path + '/{}_comp.png'.format(filename[:-4]),
-                           img=image_compressed)
+        if filename[:6] in os.listdir(final_data_path)[:6]:
+            continue
+        elif (filename.endswith(".jpg") or filename.endswith(".png")):
+            try:
+                # read each image
+                image = cv2.imread(os.path.join(data_path, filename))
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                # applies svd
+                U, S, Vt = np.linalg.svd(image, full_matrices=False)
+                S = np.diag(S)
+                image_compressed = U[:,:r] @ S[:r,:r] @ Vt[:r,:]
+                if final_data_path != None:
+                    cv2.imwrite(filename=final_data_path + '/{}_comp.png'.format(filename[:6]),
+                               img=image_compressed)
+            except:
+                print(f'An error occured in file {filename}')
+                error_list.append(filename)
+                continue
         progress += 1
-        print('Progress: {:.2f}%'.format(((len(os.listdir(data_path)[:]) - progress)/len(os.listdir(data_path)[:]))*100),
+        print('Progress: {:.2f}%'.format((1-(len(os.listdir(data_path)[:]) - progress)/len(os.listdir(data_path)[:]))*100),
               end='\r')
+    return error_list
